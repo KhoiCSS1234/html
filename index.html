@@ -10,12 +10,22 @@
             background-color: #f0f4f8;
             text-align: center;
             padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark-mode {
+            background-color: #2c3e50;
+            color: #ecf0f1;
         }
 
         h1 {
             color: #333;
             font-size: 2rem;
             margin-bottom: 20px;
+        }
+
+        body.dark-mode h1 {
+            color: #F29F58;
         }
 
         #animeContainer {
@@ -128,10 +138,29 @@
                 opacity: 0;
             }
         }
+
+        /* Menu icon style */
+        .menu-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 100;
+            transition: color 0.3s;
+        }
+
+        body.dark-mode .menu-btn {
+            color: #F29F58;
+        }
     </style>
 </head>
 <body>
     <h1>Get Random Anime</h1>
+
+    <!-- Dark mode toggle button -->
+    <span id="menuBtn" class="menu-btn">&#x2630;</span>
+
     <button id="getAnimeBtn" title="Get random anime images.">Get Random Anime</button>
     <button id="getAssBtn" title="Girls with a large butt ass.">🍑 Ass</button>
     <button id="getHentaiBtn" title="Japanese adult content in anime or manga style.">🖤 Hentai</button>
@@ -140,7 +169,8 @@
     <button id="getPaizuriBtn" title="Depiction including breast, titty, chest.">🫦 Paizuri</button>
     <button id="getEcchiBtn" title="Content not show fully, often less explicit than hentai.">💋 Ecchi</button>
     <button id="getEroBtn" title="Short for 'Erotic,' basically any NSFW images.">🔞 Ero</button>
-    <button id="clearBtn" title="Clear all images">Clear</button>
+    <button id="getvaginaBtn" title="Get random vagina images.">❤️Vagina</button> <!-- New button -->
+    <button id="clearBtn" title="Clear all images">ClearAll</button>
     <br><br>
     <div id="animeContainer"></div>
 
@@ -216,6 +246,37 @@
             fetchAnime('https://api.waifu.im/search?included_tags=ero');
         });
 
+        // New event listener for "vagina" button
+        document.getElementById('getvaginaBtn').addEventListener('click', function() {
+            fetch('https://apiquockhanh.click/images/lon')
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.url) {
+                        const imgUrl = data.url;
+                        const animeContainer = document.getElementById('animeContainer');
+
+                        // Create an image element
+                        const imgElement = document.createElement('img');
+                        imgElement.src = imgUrl;
+                        imgElement.alt = 'vagina Image';
+                        imgElement.classList.add('animeImage');
+
+                        // Add click event to open image in modal
+                        imgElement.addEventListener('click', function() {
+                            const modal = document.getElementById('myModal');
+                            const modalImg = document.getElementById('modalImg');
+                            modal.style.display = "block";
+                            modalImg.src = imgElement.src;
+                        });
+
+                        // Add image to the container
+                        animeContainer.insertBefore(imgElement, animeContainer.firstChild);
+                    }
+                })
+                .catch(error => {
+                    console.error('Lỗi khi tải dữ liệu:', error);
+                });
+        });
         // Clear all images
         document.getElementById('clearBtn').addEventListener('click', function() {
             const animeContainer = document.getElementById('animeContainer');
@@ -231,6 +292,20 @@
         window.addEventListener('click', function(event) {
             if (event.target == document.getElementById('myModal')) {
                 document.getElementById('myModal').style.display = "none";
+            }
+        });
+
+        // Toggle dark mode
+        document.getElementById('menuBtn').addEventListener('click', function() {
+            const body = document.body;
+            body.classList.toggle('dark-mode'); // Toggle dark mode on body
+            const menuBtn = document.getElementById('menuBtn');
+
+            // Change menu icon based on dark mode state
+            if (body.classList.contains('dark-mode')) {
+                menuBtn.innerHTML = '&#x2630;'; // Change to dark mode icon
+            } else {
+                menuBtn.innerHTML = '&#x2630;'; // Change to light mode icon (or modify as desired)
             }
         });
     </script>
