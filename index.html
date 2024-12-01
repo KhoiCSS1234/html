@@ -1,58 +1,238 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hacked By SpyronX</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
+    <title>Get Random Anime</title>
     <style>
         body {
-            background-color: black;
-            color: red;
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f4f8;
             text-align: center;
-            font-family: 'Courier';
-            font-size: 16px;
+            padding: 20px;
         }
+
         h1 {
-            font-size: 40px;
-            display: inline-block;
-            margin-right: 10px; /* Khoảng cách giữa tiêu đề và âm thanh */
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 20px;
         }
-        p {
-            font-size: 20px;
+
+        #animeContainer {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
-        img {
-            max-width: 80%;
+
+        .animeImage {
+            max-width: 100%;
+            max-height: 300px;
+            width: auto;
             height: auto;
-            margin-top: 20px;
+            border: 5px solid #ccc;
+            border-radius: 10px;
+            padding: 5px;
+            transition: transform 0.3s ease-in-out;
+            cursor: pointer;
+            object-fit: contain;
         }
-        audio {
-            vertical-align: middle; /* Căn chỉnh âm thanh với chữ */
+
+        .animeImage:hover {
+            transform: scale(1.05);
+        }
+
+        /* Style for modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+            max-height: 90%;
+            object-fit: contain;
+            border-radius: 20px;
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #f1f1f1;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Styling buttons */
+        button {
+            background-color: #ff5c8d;
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            text-align: center;
+            font-size: 1rem;
+            margin: 10px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            background-color: #ff4081;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            transform: translateY(-3px); /* Nút nhô lên khi hover */
+        }
+
+        button:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(255, 92, 141, 0.8);
+        }
+
+        /* Button ripple effect */
+        button:active {
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:active::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            animation: ripple 0.6s linear;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Hacked By SpyronX</h1>
-    <audio src="https://files.catbox.moe/0v2rgm.mp3" autoplay="1" controls=""></audio>
-    <marquee behavior="alternate" scrollamount="5"><p>SpyronX Kenzema</p></marquee>
-    <p>Hacking is not destruction, just a kind of exploration</p>
-    <img id="animeImage" src="" alt="Random Anime Image">
+    <h1>Get Random Anime</h1>
+    <button id="getAnimeBtn" title="Get random anime images.">Get Random Anime</button>
+    <button id="getAssBtn" title="Girls with a large butt ass.">🍑 Ass</button>
+    <button id="getHentaiBtn" title="Japanese adult content in anime or manga style.">🖤 Hentai</button>
+    <button id="getMILFBtn" title="Content featuring mature characters, middle aged woman.">👩‍🦳 MILF</button>
+    <button id="getOralBtn" title="Content focused on oral activities.">👄 Oral</button>
+    <button id="getPaizuriBtn" title="Depiction including breast, titty, chest.">🫦 Paizuri</button>
+    <button id="getEcchiBtn" title="Content not show fully, often less explicit than hentai.">💋 Ecchi</button>
+    <button id="getEroBtn" title="Short for 'Erotic,' basically any NSFW images.">🔞 Ero</button>
+    <button id="clearBtn" title="Clear all images">Clear</button>
+    <br><br>
+    <div id="animeContainer"></div>
 
-    <!-- Phát nhạc tự động và lặp lại khi kết thúc -->
+    <!-- Modal -->
+    <div id="myModal" class="modal">
+        <span class="close" id="closeBtn">&times;</span>
+        <img class="modal-content" id="modalImg">
+    </div>
+
     <script>
-        function fetchRandomImage() {
-            fetch('https://apiquockhanh.click/images/anime')
+        // Function to fetch anime images
+        function fetchAnime(apiUrl) {
+            fetch(apiUrl)
                 .then(response => response.json())
                 .then(data => {
-                    const imageUrl = data.url;
-                    document.getElementById('animeImage').src = imageUrl;
+                    if (data && data.images && data.images[0] && data.images[0].url) {
+                        const imgUrl = data.images[0].url;
+                        const animeContainer = document.getElementById('animeContainer');
+
+                        // Create an image element
+                        const imgElement = document.createElement('img');
+                        imgElement.src = imgUrl;
+                        imgElement.alt = 'Anime Image';
+                        imgElement.classList.add('animeImage');
+
+                        // Add click event to open image in modal
+                        imgElement.addEventListener('click', function() {
+                            const modal = document.getElementById('myModal');
+                            const modalImg = document.getElementById('modalImg');
+                            modal.style.display = "block";
+                            modalImg.src = imgElement.src;
+                        });
+
+                        // Add image to the container
+                        animeContainer.insertBefore(imgElement, animeContainer.firstChild);
+                    }
                 })
                 .catch(error => {
-                    console.error('Error fetching image:', error);
+                    console.error('Lỗi khi tải dữ liệu:', error);
                 });
         }
 
-        window.onload = fetchRandomImage;
+        // Event listeners for each category button
+        document.getElementById('getAnimeBtn').addEventListener('click', function() {
+            fetchAnime('https://api.waifu.im/search?included_tags=waifu');
+        });
+
+        document.getElementById('getAssBtn').addEventListener('click', function() {
+            fetchAnime('https://api.waifu.im/search?included_tags=ass');
+        });
+
+        document.getElementById('getHentaiBtn').addEventListener('click', function() {
+            fetchAnime('https://api.waifu.im/search?included_tags=hentai');
+        });
+
+        document.getElementById('getMILFBtn').addEventListener('click', function() {
+            fetchAnime('https://api.waifu.im/search?included_tags=milf');
+        });
+
+        document.getElementById('getOralBtn').addEventListener('click', function() {
+            fetchAnime('https://api.waifu.im/search?included_tags=oral');
+        });
+
+        document.getElementById('getPaizuriBtn').addEventListener('click', function() {
+            fetchAnime('https://api.waifu.im/search?included_tags=paizuri');
+        });
+
+        document.getElementById('getEcchiBtn').addEventListener('click', function() {
+            fetchAnime('https://api.waifu.im/search?included_tags=ecchi');
+        });
+
+        document.getElementById('getEroBtn').addEventListener('click', function() {
+            fetchAnime('https://api.waifu.im/search?included_tags=ero');
+        });
+
+        // Clear all images
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            const animeContainer = document.getElementById('animeContainer');
+            animeContainer.innerHTML = ''; // Xóa tất cả ảnh trong container
+        });
+
+        // Modal close functionality
+        document.getElementById('closeBtn').addEventListener('click', function() {
+            document.getElementById('myModal').style.display = "none";
+        });
+
+        // Close modal when clicking outside of the image
+        window.addEventListener('click', function(event) {
+            if (event.target == document.getElementById('myModal')) {
+                document.getElementById('myModal').style.display = "none";
+            }
+        });
     </script>
 </body>
 </html>
